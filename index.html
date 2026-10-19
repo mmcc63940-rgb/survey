@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Опрос: суббота в школе</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .container {
+    background: #fff;
+    max-width: 720px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #fff;
+    padding: 40px 30px;
+    text-align: center;
+  }
+  .header h1 { font-size: 26px; margin-bottom: 10px; }
+  .header p { opacity: 0.95; font-size: 15px; line-height: 1.5; }
+  form { padding: 30px; }
+  .question { margin-bottom: 28px; }
+  .question label.q-title {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  .required { color: #e74c3c; }
+  .options label {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: #f7f9fc;
+    border: 2px solid #e8eef5;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+  }
+  .options label:hover { background: #eef4ff; border-color: #4facfe; }
+  .options input[type="radio"],
+  .options input[type="checkbox"] {
+    margin-right: 12px;
+    width: 18px; height: 18px;
+    accent-color: #4facfe;
+  }
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e8eef5;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #4facfe;
+  }
+  textarea { resize: vertical; min-height: 100px; }
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79,172,254,0.4);
+  }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .success {
+    display: none;
+    text-align: center;
+    padding: 40px 30px 20px;
+  }
+  .success .check { font-size: 64px; margin-bottom: 20px; }
+  .success h2 { color: #27ae60; margin-bottom: 12px; }
+  .success p { color: #666; line-height: 1.6; }
+
+  .stats {
+    display: none;
+    padding: 30px;
+    border-top: 2px dashed #e8eef5;
+    background: #fafcff;
+  }
+  .stats h2 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .stats .total {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .stats .total b { color: #4facfe; font-size: 18px; }
+  .stat-block {
+    margin-bottom: 28px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  .stat-block h3 {
+    font-size: 15px;
+    color: #4a5568;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .stat-row { margin-bottom: 14px; }
+  .stat-row:last-child { margin-bottom: 0; }
+  .stat-row .label-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #333;
+  }
+  .stat-row .label-line .count { color: #666; font-weight: 600; }
+  .bar {
+    height: 12px;
+    background: #e8eef5;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s ease;
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    width: 0%;
+  }
+  .bar-fill.neg { background: linear-gradient(90deg, #ff6b6b, #ee5a6f); }
+  .bar-fill.alt { background: linear-gradient(90deg, #a29bfe, #6c5ce7); }
+  .refresh-btn {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background: #fff;
+    color: #4facfe;
+    border: 2px solid #4facfe;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: #4facfe; color: #fff; }
+  .loading {
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    padding: 10px;
+    display: none;
+  }
+  @media (max-width: 600px) {
+    form { padding: 20px; }
+    .header { padding: 30px 20px; }
+    .header h1 { font-size: 20px; }
+    .stats { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📋 Опрос: субботние занятия</h1>
+    <p>Уважаемые родители и ученики! Просим вас принять участие в опросе о судьбе учебной субботы. Ваше мнение очень важно для нас.</p>
+  </div>
+
+  <form id="surveyForm">
+    <div class="question">
+      <label class="q-title">1. Кто вы? <span class="required">*</span></label>
+      <div class="options">
+        <label><input type="radio" name="role" value="Родитель" required> Родитель</label>
+        <label><input type="radio" name="role" value="Ученик"> Ученик</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-title" for="grade">2. Класс</label>
+      <select id="grade" name="grade">
+        <option value="">— Выберите класс —</option>
+        <option>5</option><option>6</option><option>7</option>
+        <option>8</option><option>9</option><option>10</option><option>11</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <label class="q-title">3. Как вы относитесь к учёбе в субботу? <span class="required">*</span></label>
+      <div class="options">
+        <label><input type="radio" name="attitude" value="Полностью поддерживаю" required> Полностью поддерживаю</label>
+        <label><input type="radio" name="attitude" value="Полностью не поддерживаю"> Полностью не поддерживаю</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-title">4. Какой вариант вы предпочитаете? <span class="required">*</span></label>
+      <div class="options">
+        <label><input type="radio" name="preference" value="Полная отмена субботы" required> Полная отмена субботы</label>
+        <label><input type="radio" name="preference" value="Перенос в дистанционный формат"> Перенос субботы в дистанционный формат</label>
+        <label><input type="radio" name="preference" value="Оставить офлайн"> Оставить офлайн-занятия</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-title">5. Укажите причины вашего выбора (можно несколько)</label>
+      <div class="options">
+        <label><input type="checkbox" name="reasons" value="Перегрузка ребёнка"> Перегрузка ребёнка</label>
+        <label><input type="checkbox" name="reasons" value="Нехватка времени на отдых"> Нехватка времени на отдых и семью</label>
+        <label><input type="checkbox" name="reasons" value="Снижение успеваемости"> Снижение успеваемости из-за усталости</label>
+        <label><input type="checkbox" name="reasons" value="Удобство дистанта"> Удобство дистанционного формата</label>
+        <label><input type="checkbox" name="reasons" value="Качество офлайн выше"> Качество офлайн-занятий выше</label>
+        <label><input type="checkbox" name="reasons" value="Другое"> Другое</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-title" for="comment">6. Ваши предложения и комментарии</label>
+      <textarea id="comment" name="comment" placeholder="Если хотите пояснить свою позицию — напишите здесь..."></textarea>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">Отправить ответ</button>
+  </form>
+
+  <div class="success" id="successMsg">
+    <div class="check">✅</div>
+    <h2>Спасибо за участие!</h2>
+    <p>Ваш ответ успешно отправлен.<br>Мы обязательно учтём ваше мнение.</p>
+  </div>
+
+  <div class="loading" id="loadingMsg">Загрузка статистики…</div>
+
+  <div class="stats" id="statsBlock">
+    <h2>📊 Результаты опроса</h2>
+    <div class="total">Всего ответов: <b id="totalCount">—</b></div>
+
+    <div class="stat-block">
+      <h3>3. Отношение к учёбе в субботу</h3>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Полностью поддерживаю</span>
+          <span class="count" id="q3-support-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q3-support-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Полностью не поддерживаю</span>
+          <span class="count" id="q3-against-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill neg" id="q3-against-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-block">
+      <h3>4. Предпочтительный вариант</h3>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Полная отмена субботы</span>
+          <span class="count" id="q4-cancel-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q4-cancel-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Перенос в дистанционный формат</span>
+          <span class="count" id="q4-distance-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill alt" id="q4-distance-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Оставить офлайн-занятия</span>
+          <span class="count" id="q4-offline-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q4-offline-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-block">
+      <h3>5. Причины выбора (можно несколько)</h3>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Перегрузка ребёнка</span>
+          <span class="count" id="q5-overload-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q5-overload-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Нехватка времени на отдых и семью</span>
+          <span class="count" id="q5-rest-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q5-rest-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Снижение успеваемости из-за усталости</span>
+          <span class="count" id="q5-grades-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q5-grades-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Удобство дистанционного формата</span>
+          <span class="count" id="q5-distance-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill alt" id="q5-distance-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Качество офлайн-занятий выше</span>
+          <span class="count" id="q5-offline-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="q5-offline-bar"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="label-line">
+          <span>Другое</span>
+          <span class="count" id="q5-other-count">—</span>
+        </div>
+        <div class="bar"><div class="bar-fill neg" id="q5-other-bar"></div></div>
+      </div>
+    </div>
+
+    <button class="refresh-btn" id="refreshBtn">🔄 Обновить статистику</button>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwP1GwaYrMHMGGbBP4RMQhITINuM2MbjkNm3QSyk0HAnIG5PKR2QNU6PNtE-nTyk4KKtw/exec';
+
+  const statsBlock = document.getElementById('statsBlock');
+  const loadingMsg = document.getElementById('loadingMsg');
+
+  function setStat(id, count, total) {
+    const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+    document.getElementById(id + '-count').textContent = `${count} (${percent}%)`;
+    document.getElementById(id + '-bar').style.width = percent + '%';
+  }
+
+  function renderStats(data) {
+    if (!data || data.total === undefined) {
+      console.warn('Некорректные данные статистики', data);
+      return;
+    }
+    const total = data.total;
+    document.getElementById('totalCount').textContent = total;
+
+    setStat('q3-support', data.q3.support, total);
+    setStat('q3-against', data.q3.against, total);
+
+    setStat('q4-cancel', data.q4.cancel, total);
+    setStat('q4-distance', data.q4.distance, total);
+    setStat('q4-offline', data.q4.offline, total);
+
+    setStat('q5-overload', data.q5.overload, total);
+    setStat('q5-rest', data.q5.rest, total);
+    setStat('q5-grades', data.q5.grades, total);
+    setStat('q5-distance', data.q5.distance, total);
+    setStat('q5-offline', data.q5.offline, total);
+    setStat('q5-other', data.q5.other, total);
+  }
+
+  async function loadStats() {
+    loadingMsg.style.display = 'block';
+    statsBlock.style.display = 'block';
+    try {
+      const res = await fetch(API_URL + '?t=' + Date.now());
+      const data = await res.json();
+      renderStats(data);
+    } catch (err) {
+      console.error('Ошибка загрузки статистики:', err);
+    } finally {
+      loadingMsg.style.display = 'none';
+    }
+  }
+
+  document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = this;
+    const btn = document.getElementById('submitBtn');
+
+    const data = {
+      role: form.querySelector('input[name="role"]:checked')?.value || '',
+      grade: form.querySelector('#grade').value || '',
+      attitude: form.querySelector('input[name="attitude"]:checked')?.value || '',
+      preference: form.querySelector('input[name="preference"]:checked')?.value || '',
+      reasons: [...form.querySelectorAll('input[name="reasons"]:checked')].map(c => c.value),
+      comment: form.querySelector('#comment').value.trim()
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      const result = await resp.json();
+      console.log('Ответ сервера:', result);
+
+      if (result.status === 'error') {
+        throw new Error(result.message);
+      }
+
+      form.style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+      setTimeout(loadStats, 800);
+    } catch (err) {
+      console.error('Ошибка отправки:', err);
+      alert('Ошибка отправки: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'Отправить ответ';
+    }
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', loadStats);
+  window.addEventListener('DOMContentLoaded', loadStats);
+</script>
+</body>
+</html>
