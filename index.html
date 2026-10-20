@@ -147,7 +147,7 @@
     <div class="question">
       <label class="q-title">4. Какой вариант вы предпочитаете? (можно несколько) <span class="required">*</span></label>
       <div class="options">
-        <label><input type="checkbox" name="preference" value="Полная отмена субботы" required> Полная отмена субботы</label>
+        <label><input type="checkbox" name="preference" value="Полная отмена субботы"> Полная отмена субботы</label>
         <label><input type="checkbox" name="preference" value="Перенос в дистанционный формат"> Перенос субботы в дистанционный формат</label>
         <label><input type="checkbox" name="preference" value="Оставить офлайн"> Оставить офлайн-занятия</label>
       </div>
@@ -189,12 +189,20 @@
     const form = this;
     const btn = document.getElementById('submitBtn');
 
-    // Сбор данных: для пункта 4 теперь собираем массив (чекбоксы)
+    // Собираем выбранные варианты в пункте 4
+    const selectedPreferences = [...form.querySelectorAll('input[name="preference"]:checked')];
+    
+    // ПРОВЕРКА: если в пункте 4 ничего не выбрано — останавливаем отправку
+    if (selectedPreferences.length === 0) {
+      alert('Пожалуйста, выберите хотя бы один вариант в пункте 4.');
+      return; // останавливаем отправку
+    }
+
     const data = {
       role: form.querySelector('input[name="role"]:checked')?.value || '',
       grade: form.querySelector('#grade').value || '',
       attitude: form.querySelector('input[name="attitude"]:checked')?.value || '',
-      preference: [...form.querySelectorAll('input[name="preference"]:checked')].map(c => c.value),
+      preference: selectedPreferences.map(c => c.value), // берем значения выбранных
       reasons: [...form.querySelectorAll('input[name="reasons"]:checked')].map(c => c.value),
       comment: form.querySelector('#comment').value.trim()
     };
